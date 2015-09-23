@@ -127,7 +127,7 @@ stock static MovePlayerCamera(playerid, Float:CP[3], Float:FV[3]) {
 }
 
 public OnPlayerUpdate(playerid) {
-	if (g_FlyMode[playerid][flyType]) {
+	if (g_FlyMode[playerid][flyType] == 1) {
 		new
 			keys,
 			ud,
