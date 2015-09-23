@@ -6,7 +6,7 @@
  	* Gammix
 
 	Contributors:
- 	* Kalcor - Original flymode filterscript
+ 	* Scott - Original flymode filterscript
  	* Incognito - Streamer plugin
 
 	(c) Copyright 2015
@@ -16,6 +16,10 @@
 STOCKS:
 native SetPlayerCamera(playerid, type = 1);
 native SetPlayerCameraSpeed(playerid, Float:speed);
+native Float: GetPlayerCameraSpeed(playerid);
+
+CALLBACKS:
+public OnPlayerCameraUpdate(playerid, Float:oldx, Float:oldy, Float:oldz, olddir, Float:newx, Float:newy, Float:newz, newdir)
 */
 
 #include <streamer>
@@ -66,15 +70,11 @@ public OnPlayerConnect(playerid) {
 	forward Cam_OnPlayerConnect(playerid);
 #endif
 
-stock static MovePlayerCamera(playerid) {
+stock static MovePlayerCamera(playerid, Float:CP[3], Float:FV[3]) {
 	new
-		Float:CP[3],
-		Float:FV[3],
-		Float:NP[3]
+	    Float:NP[3]
 	;
-	GetPlayerCameraPos(playerid, CP[0], CP[1], CP[2]);
-	GetPlayerCameraFrontVector(playerid, FV[0], FV[1], FV[2]);
-
+	
 	#define OFFSET_X (FV[0]*6000.0)
 	#define OFFSET_Y (FV[1]*6000.0)
 	#define OFFSET_Z (FV[2]*6000.0)
@@ -135,6 +135,14 @@ public OnPlayerUpdate(playerid) {
 		;
 		GetPlayerKeys(playerid, keys, ud, lr);
 
+		new
+			Float:CP[3],
+			Float:FV[3],
+			olddir = g_FlyMode[playerid][flyDirection]
+		;
+		GetPlayerCameraPos(playerid, CP[0], CP[1], CP[2]);
+		GetPlayerCameraFrontVector(playerid, FV[0], FV[1], FV[2]);
+
 		if (g_FlyMode[playerid][flyKeys][0] != ud || g_FlyMode[playerid][flyKeys][1] != lr) {
 		    if ((g_FlyMode[playerid][flyKeys][0] != 0 || g_FlyMode[playerid][flyKeys][1] != 0) && ud == 0 && lr == 0) {
 		        StopDynamicObject(g_FlyMode[playerid][flyObject]);
@@ -153,7 +161,7 @@ public OnPlayerUpdate(playerid) {
 						g_FlyMode[playerid][flyDirection] = MOVE_LEFT;
 					}
 
-					MovePlayerCamera(playerid);
+					MovePlayerCamera(playerid, CP, FV);
 				}
 				else if(lr > 0) {
 					if(ud < 0) {
@@ -166,17 +174,17 @@ public OnPlayerUpdate(playerid) {
 						g_FlyMode[playerid][flyDirection] = MOVE_RIGHT;
 					}
 
-					MovePlayerCamera(playerid);
+					MovePlayerCamera(playerid, CP, FV);
 				}
 				else if(ud < 0) {
 					g_FlyMode[playerid][flyDirection] = MOVE_FORWARD;
 
-					MovePlayerCamera(playerid);
+					MovePlayerCamera(playerid, CP, FV);
 				}
 				else if(ud > 0) {
 					g_FlyMode[playerid][flyDirection] = MOVE_BACK;
 
-					MovePlayerCamera(playerid);
+					MovePlayerCamera(playerid, CP, FV);
 				}
 				else {
                     g_FlyMode[playerid][flyDirection] = -1;
@@ -193,8 +201,17 @@ public OnPlayerUpdate(playerid) {
                 g_FlyMode[playerid][flyDirection] = 0;
 			}
 			else {
-				MovePlayerCamera(playerid);
+				MovePlayerCamera(playerid, CP, FV);
 			}
+		}
+
+		if (funcidx("OnPlayerCameraUpdate") != -1) {
+		    new
+				Float:NP[3]
+			;
+			GetPlayerCameraPos(playerid, NP[0], NP[1], NP[2]);
+			
+			CallLocalFunction("OnPlayerCameraUpdate", "ifffifffi", playerid, CP[0], CP[1], CP[2], olddir, NP[0], NP[1], NP[2], g_FlyMode[playerid][flyDirection]);
 		}
 	}
 
@@ -260,3 +277,9 @@ stock SetPlayerCameraSpeed(playerid, Float:speed) {
 
 	return true;
 }
+
+stock Float:GetPlayerCameraSpeed(playerid) {
+    return g_FlyMode[playerid][flyMovementSpeed];
+}
+
+forward OnPlayerCameraUpdate(playerid, Float:oldx, Float:oldy, Float:oldz, olddir, Float:newx, Float:newy, Float:newz, newdir);
