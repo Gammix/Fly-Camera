@@ -142,6 +142,7 @@ public OnPlayerUpdate(playerid) {
 		;
 		GetPlayerCameraPos(playerid, CP[0], CP[1], CP[2]);
 		GetPlayerCameraFrontVector(playerid, FV[0], FV[1], FV[2]);
+		Streamer_UpdateEx(playerid, CP[0], CP[1], CP[2], GetPlayerVirtualWorld(playerid), GetPlayerInterior(playerid), STREAMER_TYPE_OBJECT);
 
 		if (g_FlyMode[playerid][flyKeys][0] != ud || g_FlyMode[playerid][flyKeys][1] != lr) {
 		    if ((g_FlyMode[playerid][flyKeys][0] != 0 || g_FlyMode[playerid][flyKeys][1] != 0) && ud == 0 && lr == 0) {
