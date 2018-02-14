@@ -21,6 +21,10 @@ native Float: GetPlayerCameraSpeed(playerid);
 CALLBACKS:
 public OnPlayerCameraUpdate(playerid, Float:oldx, Float:oldy, Float:oldz, olddir, Float:newx, Float:newy, Float:newz, newdir)
 */
+#if defined _INCLUDE_FLYCAM_
+	#endinput
+#endif
+#define _INCLUDE_FLYCAM_
 
 #include <streamer>
 
